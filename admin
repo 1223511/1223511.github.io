@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>古建筑管理后台</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, sans-serif;
+    }
+    body {
+      background: #f5f5f5;
+      color: #333;
+    }
+    .admin-header {
+      background: #2c3e50;
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-header h1 {
+      font-size: 20px;
+      font-weight: 500;
+    }
+    .admin-logout {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .admin-container {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+    .admin-sidebar {
+      width: 220px;
+      background: white;
+      border-right: 1px solid #ddd;
+      padding: 20px 0;
+    }
+    .admin-sidebar ul {
+      list-style: none;
+    }
+    .admin-sidebar li {
+      padding: 12px 20px;
+      cursor: pointer;
+    }
+    .admin-sidebar li.active {
+      background: #3498db;
+      color: white;
+    }
+    .admin-main {
+      flex: 1;
+      padding: 24px;
+    }
+    .admin-page {
+      display: none;
+    }
+    .admin-page.active {
+      display: block;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .stat-box h3 {
+      font-size: 26px;
+      color: #2c3e50;
+      margin-bottom: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #f8f9fa;
+    }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+    .btn-success{
+      background: #28a745;
+      color: white;
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+      display: none;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 8px;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-title {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    img.table-img {
+      width: 60px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .img-preview{
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-top: 8px;
+      border: 1px solid #ddd;
+    }
+    .search-bar {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+    }
+    .search-bar input {
+      flex: 1;
+    }
+    .word-wrap{
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* 登录界面样式 */
+    .login-box {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #2c3e50;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .login-form {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 380px;
+    }
+    .login-form h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .captcha-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .captcha-row input {
+      flex: 1;
+    }
+    #captchaCode {
+      padding: 8px 12px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 强制登录：账号 + 密码 + 验证码 -->
+<div class="login-box" id="loginBox">
+  <div class="login-form">
+    <h2>管理员登录</h2>
+    <div class="form-group">
+      <label>管理员账号</label>
+      <input type="text" id="adminUser" placeholder="请输入管理员账号">
+    </div>
+    <div class="form-group">
+      <label>管理员密码</label>
+      <input type="password" id="adminPwd" placeholder="请输入密码">
+    </div>
+    <div class="form-group">
+      <label>验证码</label>
+      <div class="captcha-row">
+        <input type="text" id="captchaInput" placeholder="请输入验证码">
+        <div id="captchaCode" onclick="createCaptcha()">ABCD</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:6px;" onclick="adminLogin()">登录</button>
+  </div>
+</div>
+
+<div class="admin-header">
+  <h1>古建筑管理后台</h1>
+  <button class="admin-logout" onclick="logout()">退出登录</button>
+</div>
+
+<div class="admin-container">
+  <div class="admin-sidebar">
+    <ul>
+      <li class="side-item active" onclick="goAdmin('dashboard')">控制台</li>
+      <li class="side-item" onclick="goAdmin('buildManage')">建筑管理</li>
+      <li class="side-item" onclick="goAdmin('exhibitNormalManage')">常设展览</li>
+      <li class="side-item" onclick="goAdmin('exhibitTempManage')">临时展览</li>
+      <li class="side-item" onclick="goAdmin('commentManage')">评论管理</li>
+      <li class="side-item" onclick="goAdmin('dataManage')">数据管理</li>
+    </ul>
+  </div>
+
+  <div class="admin-main">
+    <!-- 控制台 -->
+    <div id="dashboard" class="admin-page active">
+      <div class="stat-row">
+        <div class="stat-box">
+          <h3 id="totalBuild">0</h3>
+          <p>建筑总数</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalExhibitNormal">0</h3>
+          <p>常设展览</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalExhibitTemp">0</h3>
+          <p>临时展览</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalComment">0</h3>
+          <p>评论总数</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalDynasty">0</h3>
+          <p>朝代数量</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalView">0</h3>
+          <p>总浏览量</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalLike">0</h3>
+          <p>总点赞量</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="totalCollect">0</h3>
+          <p>总收藏量</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>快捷操作</h3>
+        <div style="margin-top:14px; display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="openAddModal()">添加新建筑</button>
+          <button class="btn btn-primary" onclick="openAddExhibitNormalModal()">添加常设展览</button>
+          <button class="btn btn-primary" onclick="openAddExhibitTempModal()">添加临时展览</button>
+          <button class="btn btn-danger" onclick="clearAllData()">清空所有数据</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 建筑管理 -->
+    <div id="buildManage" class="admin-page">
+      <div class="search-bar">
+        <input type="text" id="buildSearch" placeholder="搜索标题/朝代/类型" oninput="searchBuild()">
+        <button class="btn btn-primary" onclick="openAddModal()">+ 新增建筑</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>封面</th>
+            <th>标题</th>
+            <th>朝代</th>
+            <th>类型</th>
+            <th>浏览量</th>
+            <th>点赞量</th>
+            <th>收藏量</th>
+            <th>编辑时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="buildTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- 常设展览管理 -->
+    <div id="exhibitNormalManage" class="admin-page">
+      <div class="search-bar">
+        <input type="text" id="exhibitNormalSearch" placeholder="搜索展览名称/地点" oninput="searchExhibitNormal()">
+        <button class="btn btn-primary" onclick="openAddExhibitNormalModal()">+ 新增常设展览</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>封面</th>
+            <th>展览名称</th>
+            <th>地点</th>
+            <th>时间</th>
+            <th>点赞</th>
+            <th>收藏</th>
+            <th>编辑时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="exhibitNormalTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- 临时展览管理 -->
+    <div id="exhibitTempManage" class="admin-page">
+      <div class="search-bar">
+        <input type="text" id="exhibitTempSearch" placeholder="搜索展览名称/地点" oninput="searchExhibitTemp()">
+        <button class="btn btn-primary" onclick="openAddExhibitTempModal()">+ 新增临时展览</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>封面</th>
+            <th>展览名称</th>
+            <th>地点</th>
+            <th>时间</th>
+            <th>点赞</th>
+            <th>收藏</th>
+            <th>编辑时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="exhibitTempTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- 评论管理 -->
+    <div id="commentManage" class="admin-page">
+      <table>
+        <thead>
+          <tr>
+            <th>用户</th>
+            <th>评论内容</th>
+            <th>时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="commentTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- 数据管理 -->
+    <div id="dataManage" class="admin-page">
+      <div class="card">
+        <h3>导出/导入数据</h3>
+        <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="exportData()">导出JSON</button>
+          <button class="btn btn-primary" onclick="exportExcel()">导出Excel</button>
+          <input type="file" id="importFile" style="display:none;" accept=".json,.xlsx,.xls,.doc,.docx" onchange="importData(event)">
+          <button class="btn" onclick="document.getElementById('importFile').click()">导入文件</button>
+          <p style="width:100%; margin-top:8px; color:#666;">支持格式：JSON、Excel表格、Word文档</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 建筑弹窗 -->
+<div class="modal" id="buildModal">
+  <div class="modal-content">
+    <div class="modal-title" id="modalTitle">添加建筑</div>
+    <input type="hidden" id="editId">
+    <div class="form-group"><label>标题</label><input id="formTitle"></div>
+    <div class="form-group">
+      <label>朝代</label>
+      <select id="formDynasty">
+        <option value="">请选择朝代</option>
+        <option value="唐代">唐代</option>
+        <option value="宋代">宋代</option>
+        <option value="辽代">辽代</option>
+        <option value="金代">金代</option>
+        <option value="元代">元代</option>
+        <option value="明代">明代</option>
+        <option value="清代">清代</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>类型</label>
+      <select id="formType">
+        <option value="">请选择类型</option>
+        <option value="宫殿">宫殿</option>
+        <option value="寺庙">寺庙</option>
+        <option value="塔">塔</option>
+        <option value="园林">园林</option>
+        <option value="楼阁">楼阁</option>
+        <option value="民居">民居</option>
+        <option value="祠堂">祠堂</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>图片</label>
+      <input type="file" id="formImgFile" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,image/bmp,image/svg+xml" onchange="previewImg(this)">
+      <input type="hidden" id="formImg">
+      <img id="imgPreview" class="img-preview" style="display:none;">
+    </div>
+    <div class="form-group"><label>详细介绍</label><textarea id="formText"></textarea></div>
+    <div class="form-group">
+      <label>浏览量</label>
+      <input type="number" id="formView" value="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>点赞量</label>
+      <input type="number" id="formLike" value="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>收藏量</label>
+      <input type="number" id="formCollect" value="0" min="0">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveBuild()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 常设展览弹窗 -->
+<div class="modal" id="exhibitNormalModal">
+  <div class="modal-content">
+    <div class="modal-title" id="exhibitNormalModalTitle">添加常设展览</div>
+    <input type="hidden" id="editExhibitNormalId">
+    <div class="form-group"><label>展览名称</label><input id="exhibitNormalName"></div>
+    <div class="form-group"><label>展览地点</label><input id="exhibitNormalPlace"></div>
+    <div class="form-group"><label>展览时间</label><input id="exhibitNormalTime"></div>
+    <div class="form-group">
+      <label>封面图片</label>
+      <input type="file" id="exhibitNormalImgFile" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,image/bmp,image/svg+xml" onchange="previewExhibitNormalImg(this)">
+      <input type="hidden" id="exhibitNormalImg">
+      <img id="exhibitNormalPreview" class="img-preview" style="display:none;">
+    </div>
+    <div class="form-group"><label>展览介绍</label><textarea id="exhibitNormalDesc"></textarea></div>
+    <div class="form-group">
+      <label>点赞量</label>
+      <input type="number" id="exhibitNormalLike" value="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>收藏量</label>
+      <input type="number" id="exhibitNormalCollect" value="0" min="0">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeExhibitNormalModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveExhibitNormal()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 临时展览弹窗 -->
+<div class="modal" id="exhibitTempModal">
+  <div class="modal-content">
+    <div class="modal-title" id="exhibitTempModalTitle">添加临时展览</div>
+    <input type="hidden" id="editExhibitTempId">
+    <div class="form-group"><label>展览名称</label><input id="exhibitTempName"></div>
+    <div class="form-group"><label>展览地点</label><input id="exhibitTempPlace"></div>
+    <div class="form-group"><label>展览时间</label><input id="exhibitTempTime"></div>
+    <div class="form-group">
+      <label>封面图片</label>
+      <input type="file" id="exhibitTempImgFile" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,image/bmp,image/svg+xml" onchange="previewExhibitTempImg(this)">
+      <input type="hidden" id="exhibitTempImg">
+      <img id="exhibitTempPreview" class="img-preview" style="display:none;">
+    </div>
+    <div class="form-group"><label>展览介绍</label><textarea id="exhibitTempDesc"></textarea></div>
+    <div class="form-group">
+      <label>点赞量</label>
+      <input type="number" id="exhibitTempLike" value="0" min="0">
+    </div>
+    <div class="form-group">
+      <label>收藏量</label>
+      <input type="number" id="exhibitTempCollect" value="0" min="0">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeExhibitTempModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveExhibitTemp()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ====================== 安全设置 ======================
+  const ADMIN_USER = "admin";
+  const ADMIN_PASSWORD = "123456";
+  let currentCaptcha = "";
+
+  // 固定选项
+  const DYNASTY_LIST = ["唐代","宋代","辽代","金代","元代","明代","清代"];
+  const TYPE_LIST = ["宫殿","寺庙","塔","园林","楼阁","民居","祠堂"];
+
+  // 获取当前时间 格式化
+  function getNowTime(){
+    let d = new Date();
+    let y = d.getFullYear();
+    let m = String(d.getMonth()+1).padStart(2,'0');
+    let day = String(d.getDate()).padStart(2,'0');
+    let h = String(d.getHours()).padStart(2,'0');
+    let mi = String(d.getMinutes()).padStart(2,'0');
+    let s = String(d.getSeconds()).padStart(2,'0');
+    return `${y}-${m}-${day} ${h}:${mi}:${s}`;
+  }
+
+  // ====================== 初始化 ======================
+  function initDefaultData() {
+      if(!localStorage.getItem("buildData")){
+          const defaultBuild = [{}];
+          localStorage.setItem("buildData", JSON.stringify(defaultBuild));
+      }
+      if(!localStorage.getItem("exhibitNormalData")){
+          localStorage.setItem("exhibitNormalData", JSON.stringify([]));
+      }
+      if(!localStorage.getItem("exhibitTempData")){
+          localStorage.setItem("exhibitTempData", JSON.stringify([]));
+      }
+  }
+
+  // 数据方法
+  function getData() { let d = localStorage.getItem("buildData"); return d ? JSON.parse(d) : []; }
+  function setData(arr) { localStorage.setItem("buildData", JSON.stringify(arr)); }
+  
+  function getExhibitNormalData() { let d = localStorage.getItem("exhibitNormalData"); return d ? JSON.parse(d) : []; }
+  function setExhibitNormalData(arr) { localStorage.setItem("exhibitNormalData", JSON.stringify(arr)); }
+  
+  function getExhibitTempData() { let d = localStorage.getItem("exhibitTempData"); return d ? JSON.parse(d) : []; }
+  function setExhibitTempData(arr) { localStorage.setItem("exhibitTempData", JSON.stringify(arr)); }
+
+  let currentPage = 'dashboard';
+
+  // ====================== 验证码生成 ======================
+  function createCaptcha(){
+    const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let code = "";
+    for(let i=0;i<4;i++){
+      code += chars[Math.floor(Math.random()*chars.length)];
+    }
+    currentCaptcha = code;
+    document.getElementById("captchaCode").innerText = code;
+  }
+
+  // ====================== 强制登录：账号+密码+验证码 ======================
+  function adminLogin() {
+    let user = document.getElementById('adminUser').value.trim();
+    let pwd = document.getElementById('adminPwd').value.trim();
+    let inputCode = document.getElementById('captchaInput').value.trim().toUpperCase();
+
+    if(!user || !pwd || !inputCode){
+      alert('请填写完整信息！');
+      return;
+    }
+    if(inputCode !== currentCaptcha){
+      alert('验证码错误！');
+      createCaptcha();
+      return;
+    }
+    if(user === ADMIN_USER && pwd === ADMIN_PASSWORD){
+      document.getElementById('loginBox').style.display = 'none';
+      refresh();
+    }else{
+      alert('账号或密码错误！');
+      createCaptcha();
+    }
+  }
+
+  // 退出 → 回到登录页
+  function logout() {
+    location.reload();
+  }
+
+  // ====================== 页面切换 ======================
+  function goAdmin(id) {
+    currentPage = id;
+    document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.side-item').forEach(i => i.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(event) event.target.classList.add('active');
+    refresh();
+  }
+
+  function refresh() {
+    if (currentPage === 'dashboard') loadDashboard();
+    if (currentPage === 'buildManage') renderBuildTable();
+    if (currentPage === 'exhibitNormalManage') renderExhibitNormalTable();
+    if (currentPage === 'exhibitTempManage') renderExhibitTempTable();
+    if (currentPage === 'commentManage') renderCommentTable();
+  }
+
+  // 控制台
+  function loadDashboard() {
+    let buildData = getData();
+    let normalData = getExhibitNormalData();
+    let tempData = getExhibitTempData();
+    
+    document.getElementById('totalBuild').innerText = buildData.length - 1;
+    document.getElementById('totalExhibitNormal').innerText = normalData.length;
+    document.getElementById('totalExhibitTemp').innerText = tempData.length;
+    
+    // 统计总浏览/点赞/收藏
+    let totalView = 0, totalLike = 0, totalCollect = 0;
+    buildData.forEach((b,i)=>{ if(i!==0){ totalView += b.view||0; totalLike += b.like||0; totalCollect += b.collect||0; } });
+    normalData.forEach(e=>{ totalLike += e.like||0; totalCollect += e.collect||0; });
+    tempData.forEach(e=>{ totalLike += e.like||0; totalCollect += e.collect||0; });
+    
+    document.getElementById('totalView').innerText = totalView;
+    document.getElementById('totalLike').innerText = totalLike;
+    document.getElementById('totalCollect').innerText = totalCollect;
+
+    let dynastySet = new Set();
+    buildData.forEach((b,i)=>{if(i!==0)dynastySet.add(b.dynasty)});
+    document.getElementById('totalDynasty').innerText = dynastySet.size;
+    
+    let cs = JSON.parse(localStorage.getItem('comments') || '[]');
+    document.getElementById('totalComment').innerText = cs.length;
+  }
+
+  // 图片预览 - 建筑
+  function previewImg(input){
+    let file = input.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e){
+      document.getElementById('imgPreview').src = e.target.result;
+      document.getElementById('imgPreview').style.display = 'block';
+      document.getElementById('formImg').value = e.target.result;
+    }
+    reader.readAsDataURL(file);
+  }
+  // 图片预览 - 常设展览
+  function previewExhibitNormalImg(input){
+    let file = input.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e){
+      document.getElementById('exhibitNormalPreview').src = e.target.result;
+      document.getElementById('exhibitNormalPreview').style.display = 'block';
+      document.getElementById('exhibitNormalImg').value = e.target.result;
+    }
+    reader.readAsDataURL(file);
+  }
+  // 图片预览 - 临时展览
+  function previewExhibitTempImg(input){
+    let file = input.files[0];
+    if(!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e){
+      document.getElementById('exhibitTempPreview').src = e.target.result;
+      document.getElementById('exhibitTempPreview').style.display = 'block';
+      document.getElementById('exhibitTempImg').value = e.target.result;
+    }
+    reader.readAsDataURL(file);
+  }
+
+  // ====================== 建筑管理 ======================
+  function renderBuildTable() {
+    let list = getData().filter((_,i)=>i!==0);
+    let html = '';
+    list.forEach((item, idx) => {
+      html += `
+      <tr>
+        <td><img src="${item.img}" class="table-img" onerror="this.src='https://picsum.photos/800/600?random='"></td>
+        <td>${item.title}</td>
+        <td>${item.dynasty}</td>
+        <td>${item.type}</td>
+        <td>${item.view || 0}</td>
+        <td>${item.like || 0}</td>
+        <td>${item.collect || 0}</td>
+        <td>${item.editTime || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editBuild(${idx+1})">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="delBuild(${idx+1})">删除</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('buildTableBody').innerHTML = html;
+  }
+  function searchBuild() {
+    let kw = document.getElementById('buildSearch').value.toLowerCase();
+    let list = getData().filter((item, i) => {
+        if(i===0) return false;
+        return item.title.toLowerCase().includes(kw) || item.dynasty.toLowerCase().includes(kw) || item.type.toLowerCase().includes(kw);
+    });
+    let html = '';
+    list.forEach((item, idx) => {
+      html += `
+      <tr>
+        <td><img src="${item.img}" class="table-img"></td>
+        <td>${item.title}</td>
+        <td>${item.dynasty}</td>
+        <td>${item.type}</td>
+        <td>${item.view || 0}</td>
+        <td>${item.like || 0}</td>
+        <td>${item.collect || 0}</td>
+        <td>${item.editTime || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editBuild(${getData().indexOf(item)})">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="delBuild(${getData().indexOf(item)})">删除</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('buildTableBody').innerHTML = html;
+  }
+  function openAddModal() {
+    document.getElementById('modalTitle').innerText = '添加建筑';
+    document.getElementById('editId').value = '';
+    document.getElementById('formTitle').value = '';
+    document.getElementById('formDynasty').value = '';
+    document.getElementById('formType').value = '';
+    document.getElementById('formImg').value = '';
+    document.getElementById('formText').value = '';
+    document.getElementById('formView').value = 0;
+    document.getElementById('formLike').value = 0;
+    document.getElementById('formCollect').value = 0;
+    document.getElementById('imgPreview').style.display = 'none';
+    document.getElementById('formImgFile').value = '';
+    document.getElementById('buildModal').classList.add('show');
+  }
+  function editBuild(index) {
+    let data = getData();
+    let item = data[index];
+    document.getElementById('modalTitle').innerText = '编辑建筑';
+    document.getElementById('editId').value = index;
+    document.getElementById('formTitle').value = item.title;
+    document.getElementById('formDynasty').value = item.dynasty;
+    document.getElementById('formType').value = item.type;
+    document.getElementById('formImg').value = item.img;
+    document.getElementById('formText').value = item.text || '';
+    document.getElementById('formView').value = item.view || 0;
+    document.getElementById('formLike').value = item.like || 0;
+    document.getElementById('formCollect').value = item.collect || 0;
+    document.getElementById('imgPreview').src = item.img;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('buildModal').classList.add('show');
+  }
+  function closeModal() {
+    document.getElementById('buildModal').classList.remove('show');
+  }
+  function saveBuild() {
+    let id = document.getElementById('editId').value;
+    let title = document.getElementById('formTitle').value.trim();
+    let dynasty = document.getElementById('formDynasty').value.trim();
+    let type = document.getElementById('formType').value.trim();
+    let img = document.getElementById('formImg').value.trim();
+    let text = document.getElementById('formText').value.trim();
+    let view = parseInt(document.getElementById('formView').value) || 0;
+    let like = parseInt(document.getElementById('formLike').value) || 0;
+    let collect = parseInt(document.getElementById('formCollect').value) || 0;
+    
+    if (!title || !dynasty || !type) { alert('请填写必填项'); return; }
+
+    // 无图片自动补默认图
+    if (!img) {
+      img = 'https://picsum.photos/800/600?random=' + Math.random();
+    }
+    
+    let data = getData();
+    let item = { 
+      title, dynasty, type, img, text, 
+      view, like, collect, 
+      editTime:getNowTime() 
+    };
+    
+    if (id === '') data.push(item); else data[id] = item;
+    setData(data); closeModal(); refresh(); alert('保存成功！');
+  }
+  function delBuild(index) {
+    if (!confirm('确定删除？')) return;
+    let data = getData(); data.splice(index, 1); setData(data); refresh();
+  }
+
+  // ====================== 常设展览管理 ======================
+  function renderExhibitNormalTable() {
+    let list = getExhibitNormalData();
+    let html = '';
+    list.forEach((item, idx) => {
+      html += `
+      <tr>
+        <td><img src="${item.img}" class="table-img" onerror="this.src='https://picsum.photos/800/600?random='"></td>
+        <td>${item.name}</td>
+        <td>${item.place}</td>
+        <td>${item.time || '-'}</td>
+        <td>${item.like || 0}</td>
+        <td>${item.collect || 0}</td>
+        <td>${item.editTime || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editExhibitNormal(${idx})">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="delExhibitNormal(${idx})">删除</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('exhibitNormalTableBody').innerHTML = html;
+  }
+  function searchExhibitNormal() {
+    let kw = document.getElementById('exhibitNormalSearch').value.toLowerCase();
+    let list = getExhibitNormalData().filter(item => 
+      item.name.toLowerCase().includes(kw) || item.place.toLowerCase().includes(kw)
+    );
+    let html = '';
+    list.forEach((item, idx) => {
+      html += `
+      <tr>
+        <td><img src="${item.img}" class="table-img"></td>
+        <td>${item.name}</td>
+        <td>${item.place}</td>
+        <td>${item.time || '-'}</td>
+        <td>${item.like || 0}</td>
+        <td>${item.collect || 0}</td>
+        <td>${item.editTime || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editExhibitNormal(${idx})">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="delExhibitNormal(${idx})">删除</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('exhibitNormalTableBody').innerHTML = html;
+  }
+  function openAddExhibitNormalModal() {
+    document.getElementById('exhibitNormalModalTitle').innerText = '添加常设展览';
+    document.getElementById('editExhibitNormalId').value = '';
+    document.getElementById('exhibitNormalName').value = '';
+    document.getElementById('exhibitNormalPlace').value = '';
+    document.getElementById('exhibitNormalTime').value = '';
+    document.getElementById('exhibitNormalImg').value = '';
+    document.getElementById('exhibitNormalDesc').value = '';
+    document.getElementById('exhibitNormalLike').value = 0;
+    document.getElementById('exhibitNormalCollect').value = 0;
+    document.getElementById('exhibitNormalImgFile').value = '';
+    document.getElementById('exhibitNormalPreview').style.display = 'none';
+    document.getElementById('exhibitNormalModal').classList.add('show');
+  }
+  function editExhibitNormal(index) {
+    let data = getExhibitNormalData();
+    let item = data[index];
+    document.getElementById('exhibitNormalModalTitle').innerText = '编辑常设展览';
+    document.getElementById('editExhibitNormalId').value = index;
+    document.getElementById('exhibitNormalName').value = item.name;
+    document.getElementById('exhibitNormalPlace').value = item.place;
+    document.getElementById('exhibitNormalTime').value = item.time;
+    document.getElementById('exhibitNormalImg').value = item.img;
+    document.getElementById('exhibitNormalDesc').value = item.desc;
+    document.getElementById('exhibitNormalLike').value = item.like || 0;
+    document.getElementById('exhibitNormalCollect').value = item.collect || 0;
+    document.getElementById('exhibitNormalPreview').src = item.img;
+    document.getElementById('exhibitNormalPreview').style.display = 'block';
+    document.getElementById('exhibitNormalModal').classList.add('show');
+  }
+  function closeExhibitNormalModal() {
+    document.getElementById('exhibitNormalModal').classList.remove('show');
+  }
+  function saveExhibitNormal() {
+    let id = document.getElementById('editExhibitNormalId').value;
+    let name = document.getElementById('exhibitNormalName').value.trim();
+    let place = document.getElementById('exhibitNormalPlace').value.trim();
+    let time = document.getElementById('exhibitNormalTime').value.trim();
+    let img = document.getElementById('exhibitNormalImg').value.trim();
+    let desc = document.getElementById('exhibitNormalDesc').value.trim();
+    let like = parseInt(document.getElementById('exhibitNormalLike').value) || 0;
+    let collect = parseInt(document.getElementById('exhibitNormalCollect').value) || 0;
+    
+    if (!name || !place) { alert('请填写名称和地点'); return; }
+
+    // 没上传图片时自动给默认图，避免保存失败
+    if (!img) {
+      img = 'https://picsum.photos/800/600?random=' + Math.random();
+    }
+    
+    let data = getExhibitNormalData();
+    let item = { 
+      name, place, time, img, desc,
+      like, collect,
+      editTime:getNowTime()
+    };
+    
+    if (id === '') data.push(item); else data[id] = item;
+    setExhibitNormalData(data); closeExhibitNormalModal(); refresh(); alert('保存成功！');
+  }
+  function delExhibitNormal(index) {
+    if (!confirm('确定删除该常设展览？')) return;
+    let data = getExhibitNormalData(); data.splice(index, 1); setExhibitNormalData(data); refresh();
+  }
+
+  // ====================== 临时展览管理 ======================
+  function renderExhibitTempTable() {
+    let list = getExhibitTempData();
+    let html = '';
+    list.forEach((item, idx) => {
+      html += `
+      <tr>
+        <td><img src="${item.img}" class="table-img" onerror="this.src='https://picsum.photos/800/600?random='"></td>
+        <td>${item.name}</td>
+        <td>${item.place}</td>
+        <td>${item.time || '-'}</td>
+        <td>${item.like || 0}</td>
+        <td>${item.collect || 0}</td>
+        <td>${item.editTime || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editExhibitTemp(${idx})">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="delExhibitTemp(${idx})">删除</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('exhibitTempTableBody').innerHTML = html;
+  }
+  function searchExhibitTemp() {
+    let kw = document.getElementById('exhibitTempSearch').value.toLowerCase();
+    let list = getExhibitTempData().filter(item => 
+      item.name.toLowerCase().includes(kw) || item.place.toLowerCase().includes(kw)
+    );
+    let html = '';
+    list.forEach((item, idx) => {
+      html += `
+      <tr>
+        <td><img src="${item.img}" class="table-img"></td>
+        <td>${item.name}</td>
+        <td>${item.place}</td>
+        <td>${item.time || '-'}</td>
+        <td>${item.like || 0}</td>
+        <td>${item.collect || 0}</td>
+        <td>${item.editTime || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="editExhibitTemp(${idx})">编辑</button>
+          <button class="btn btn-sm btn-danger" onclick="delExhibitTemp(${idx})">删除</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('exhibitTempTableBody').innerHTML = html;
+  }
+  function openAddExhibitTempModal() {
+    document.getElementById('exhibitTempModalTitle').innerText = '添加临时展览';
+    document.getElementById('editExhibitTempId').value = '';
+    document.getElementById('exhibitTempName').value = '';
+    document.getElementById('exhibitTempPlace').value = '';
+    document.getElementById('exhibitTempTime').value = '';
+    document.getElementById('exhibitTempImg').value = '';
+    document.getElementById('exhibitTempDesc').value = '';
+    document.getElementById('exhibitTempLike').value = 0;
+    document.getElementById('exhibitTempCollect').value = 0;
+    document.getElementById('exhibitTempImgFile').value = '';
+    document.getElementById('exhibitTempPreview').style.display = 'none';
+    document.getElementById('exhibitTempModal').classList.add('show');
+  }
+  function editExhibitTemp(index) {
+    let data = getExhibitTempData();
+    let item = data[index];
+    document.getElementById('exhibitTempModalTitle').innerText = '编辑临时展览';
+    document.getElementById('editExhibitTempId').value = index;
+    document.getElementById('exhibitTempName').value = item.name;
+    document.getElementById('exhibitTempPlace').value = item.place;
+    document.getElementById('exhibitTempTime').value = item.time;
+    document.getElementById('exhibitTempImg').value = item.img;
+    document.getElementById('exhibitTempDesc').value = item.desc;
+    document.getElementById('exhibitTempLike').value = item.like || 0;
+    document.getElementById('exhibitTempCollect').value = item.collect || 0;
+    document.getElementById('exhibitTempPreview').src = item.img;
+    document.getElementById('exhibitTempPreview').style.display = 'block';
+    document.getElementById('exhibitTempModal').classList.add('show');
+  }
+  function closeExhibitTempModal() {
+    document.getElementById('exhibitTempModal').classList.remove('show');
+  }
+  function saveExhibitTemp() {
+    let id = document.getElementById('editExhibitTempId').value;
+    let name = document.getElementById('exhibitTempName').value.trim();
+    let place = document.getElementById('exhibitTempPlace').value.trim();
+    let time = document.getElementById('exhibitTempTime').value.trim();
+    let img = document.getElementById('exhibitTempImg').value.trim();
+    let desc = document.getElementById('exhibitTempDesc').value.trim();
+    let like = parseInt(document.getElementById('exhibitTempLike').value) || 0;
+    let collect = parseInt(document.getElementById('exhibitTempCollect').value) || 0;
+    
+    if (!name || !place) { alert('请填写名称和地点'); return; }
+    
+    // 无图片自动补默认图
+    if (!img) {
+      img = 'https://picsum.photos/800/600?random=' + Math.random();
+    }
+
+    let data = getExhibitTempData();
+    let item = { 
+      name, place, time, img, desc,
+      like, collect,
+      editTime:getNowTime()
+    };
+    
+    if (id === '') data.push(item); else data[id] = item;
+    setExhibitTempData(data); closeExhibitTempModal(); refresh(); alert('保存成功！');
+  }
+  function delExhibitTemp(index) {
+    if (!confirm('确定删除该临时展览？')) return;
+    let data = getExhibitTempData(); data.splice(index, 1); setExhibitTempData(data); refresh();
+  }
+
+  // ====================== 评论管理 ======================
+  function renderCommentTable() {
+    let cs = JSON.parse(localStorage.getItem('comments') || '[]');
+    let html = '';
+    cs.forEach((c, i) => {
+      html += `
+      <tr>
+        <td>${c.user || '游客'}</td>
+        <td class="word-wrap">${c.content}</td>
+        <td>${c.time}</td>
+        <td>
+          <button class="btn btn-sm btn-danger" onclick="delComment(${i})">删除</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('commentTableBody').innerHTML = html;
+  }
+  function delComment(i) {
+    if (!confirm('删除评论？')) return;
+    let cs = JSON.parse(localStorage.getItem('comments') || '[]');
+    cs.splice(i, 1); localStorage.setItem('comments', JSON.stringify(cs)); renderCommentTable();
+  }
+
+  // ====================== 数据管理 ======================
+  function exportExcel(){
+    let data = getData().filter((_,i)=>i!==0);
+    let csv = "标题,朝代,类型,浏览量,点赞量,收藏量,介绍,编辑时间\n";
+    data.forEach(item=>{
+      csv += `${item.title},${item.dynasty},${item.type},${item.view||0},${item.like||0},${item.collect||0},"${item.text||''}",${item.editTime||''}\n`;
+    });
+    let blob = new Blob([new Uint8Array([0xEF,0xBB,0xBF]), csv], {type: 'text/csv;charset=utf-8'});
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = "古建筑数据.csv";
+    a.click();
+  }
+  function importData(e) {
+    let file = e.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        let text = ev.target.result;
+        if(file.name.endsWith('.json')){
+          let data = JSON.parse(text);
+          if (data.buildData) setData(data.buildData);
+          if (data.exhibitNormalData) setExhibitNormalData(data.exhibitNormalData);
+          if (data.exhibitTempData) setExhibitTempData(data.exhibitTempData);
+          if (data.comments) localStorage.setItem('comments', JSON.stringify(data.comments));
+        }else{
+          let lines = text.split(/\n|\r/).filter(l=>l.trim());
+          let build = getData();
+          lines.forEach(line=>{
+            let arr = line.split(/[,，\t]/).map(v=>v.trim().replace(/"/g,''));
+            if(arr.length>=3){
+              build.push({
+                title:arr[0]||'无标题',
+                dynasty:arr[1]||'清代',
+                type:arr[2]||'宫殿',
+                img:'https://picsum.photos/800/600?random='+Math.random(),
+                text:arr[3]||'',
+                view:0, like:0, collect:0,
+                editTime:getNowTime()
+              });
+            }
+          });
+          setData(build);
+        }
+        alert('导入成功'); refresh();
+      } catch(e) { 
+        alert('解析失败：'+e.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+  function exportData() {
+    let all = {
+      buildData: getData(),
+      exhibitNormalData: getExhibitNormalData(),
+      exhibitTempData: getExhibitTempData(),
+      comments: JSON.parse(localStorage.getItem('comments') || '[]')
+    };
+    let blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '古建筑数据.json';
+    a.click();
+  }
+  function clearAllData() {
+    if (!confirm('确定清空所有数据？不可恢复！')) return;
+    localStorage.clear(); initDefaultData(); refresh(); alert('已清空');
+  }
+
+  // ====================== 页面启动 ======================
+  window.onload = () => {
+    initDefaultData();
+    createCaptcha();
+    document.getElementById('loginBox').style.display = 'flex';
+  };
+</script>
+</body>
+</html>
