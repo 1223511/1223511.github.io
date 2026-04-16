@@ -1,5 +1,3 @@
-# 1223511.github.io
-数智古建—基于AI的中华传统建筑数字化科普平台
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
