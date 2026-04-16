@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数智古建—基于AI的中华传统建筑数字化科普平台</title>
+    <link rel="stylesheet" href="./icon/iconfont.css">
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "SimHei", sans-serif;
+        }
+
+        /* 主页样式 */
+        body {
+            background:#f7f4ee;
+            color:#333;
+            line-height:1.7;
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏增强 */
+        .nav{
+            width:100%;
+            background:#9E2D2A;
+            color:white;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:15px 0;
+            position:sticky;
+            top:0;
+            z-index:99;
+            box-shadow: 0 2px 10px rgba(158, 45, 42, 0.3);
+            transition: all 0.3s ease;
+        }
+        .nav.scroll {
+            padding: 10px 0;
+            background: rgba(158, 45, 42, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .nav .wrap{
+            width:1100px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        .admin-hidden-btn {
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: none;
+            outline: none;
+            cursor: default;
+            opacity: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        .logo{
+            font-size:22px;
+            font-weight:bold;
+            display: flex;
+            align-items:center;
+            gap: 8px;
+            position: relative;
+        }
+        .menu{
+            display:flex;
+            gap:35px;
+            list-style:none;
+            align-items:center;
+            position: relative;
+        }
+        .menu a{
+            color:white;
+            text-decoration:none;
+            font-size:15px;
+            cursor:pointer;
+            position: relative;
+            padding: 5px 0;
+        }
+        .menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #fff;
+            transition: width 0.3s ease;
+        }
+        .menu a:hover::after {
+            width: 100%;
+        }
+
+        /* 我的菜单下拉 */
+        .my-menu {
+            position: relative;
+            cursor: pointer;
+        }
+        .my-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #fff;
+            color: #333;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            width: 160px;
+            padding: 8px 0;
+            display: none;
+            z-index: 100;
+        }
+        .my-dropdown.show {
+            display: block;
+        }
+        .my-dropdown-item {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .my-dropdown-item:hover {
+            background: #f5f5f5;
+            color: #9E2D2A;
+        }
+
+        /* 搜索栏样式增强 */
+        .search-box{
+            display:flex;
+            align-items:center;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            padding: 0 5px;
+            position: relative;
+        }
+        .search-input{
+            height:32px;
+            padding:0 12px;
+            border:none;
+            border-radius:4px 0 0 4px;
+            outline:none;
+            font-size:14px;
+            width:180px;
+            background: transparent;
+            color: white;
+        }
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.8);
+        }
+        .search-btn{
+            height:32px;
+            width:35px;
+            background:#A9322F;
+            color:white;
+            border:none;
+            border-radius:0 4px 4px 0;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition: all 0.2s ease;
+        }
+        .search-btn:hover{
+            background:#b83b38;
+            transform: scale(1.05);
+        }
+
+        /* 搜索下拉建议 */
+        .search-suggest{
+            position: absolute;
+            top: 36px;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            color: #333;
+            border-radius: 4px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+        .search-suggest-item{
+            padding: 8px 12px;
+            font-size:14px;
+            cursor:pointer;
+            transition: 0.2s;
+        }
+        .search-suggest-item:hover{
+            background: #f5f5f5;
+            color: #9E2D2A;
+        }
+        
+        /* 全屏轮播图增强 */
+        .swiper {
+    width: 100%;
+    height: calc(100vh - 60px); /* 全屏高度 - 顶部导航高度 */
+    background-size: cover;      /* 图片铺满 */
+    background-position: center; /* 居中 */
+    background-repeat: no-repeat;
+    position: relative;
+    /* 开启动画：名称 时长 线性 无限循环 */
+    animation: bgCarousel 40s linear infinite;
+}
+
+/* 关键帧：自动切换背景图 */
+@keyframes bgCarousel {
+    0%   { background-image: url("images/000.jpg"); }
+    25%  { background-image: url("images/001.jpg"); }
+    50%  { background-image: url("images/002.jpg"); }
+    75%  { background-image: url("images/003.jpg"); }
+    100% { background-image: url("images/004.png"); }
+}
+        .swiper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
+            z-index: 1;
+        }
+        .swiper-text {
+            position: absolute;
+            bottom: 80px;
+            left: 100px;
+            z-index: 2;
+            color: white;
+            max-width: 600px;
+        }
+        .swiper-text h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .swiper-text p {
+            font-size: 18px;
+            line-height: 1.8;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .swiper-btn {
+            position: absolute;
+            bottom: 80px;
+            right: 100px;
+            z-index: 2;
+        }
+        .swiper-btn a {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #9E2D2A;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(158, 45, 42, 0.4);
+            transition: all 0.3s ease;
+        }
+        .swiper-btn a:hover {
+            background: #b83b38;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(158, 45, 42, 0.5);
+        }
+
+        /* 通用内容区域增强 */
+        .container{
+            width:1350px;
+            margin:40px auto;
+        }
+        .section{
+            margin-bottom:60px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s ease;
+        }
+        .section.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .section h2{
+            font-size:28px;
+            color:#9E2D2A;
+            border-left:5px solid #9E2D2A;
+            padding-left:15px;
+            position: relative;
+            cursor: pointer;
+            margin: 0;
+        }
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 15px;
+            width: 60px;
+            height: 3px;
+            background: #9E2D2A;
+            border-radius: 3px;
+        }
+        .section p{
+            font-size:16px;
+            line-height:1.9;
+            color:#444;
+        }
+
+        /* 古建筑全屏页面专用增强 */
+        .build-title {
+            width: 100%;
+            background: #fff;
+            padding: 25px 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .build-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #9E2D2A, transparent);
+        }
+        .build-title h2 {
+            font-size: 28px;
+            color: #9E2D2A;
+            margin: 0;
+            padding: 0;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 全屏布局容器 */
+        .full-container {
+            width: 100%;
+            padding: 0 50px 50px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* 左侧分类栏增强 + 固定不滑动 */
+        .left{
+            width:260px;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 2px 15px rgba(0,0,0,0.06);
+            position: sticky;
+            top: 100px;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+        }
+        .left:hover {
+            box-shadow:0 5px 20px rgba(0,0,0,0.1);
+        }
+        .left h3{
+            font-size:18px;
+            color:#9E2D2A;
+            margin-bottom:18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f7f4ee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .left ul{
+            list-style:none;
+            margin-bottom:30px;
+        }
+        .left li{
+            padding:12px 10px;
+            font-size:15px;
+            cursor:pointer;
+            transition: all 0.25s ease;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        .left li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: #9E2D2A;
+            transform: translateX(-100%);
+            transition: transform 0.25s ease;
+        }
+        .left li:hover{
+            color:#9E2D2A;
+            font-weight:bold;
+            background: #f7f4ee;
+            padding-left: 16px;
+            transform: translateX(3px);
+        }
+        .left li:hover::before {
+            transform: translateX(0);
+        }
+        .left li.active{
+            color:#fff;
+            font-weight:bold;
+            background: #9E2D2A;
+            padding-left:16px;
+            box-shadow: 0 3px 10px rgba(158, 45, 42, 0.2);
+        }
+        .left li.active::before {
+            transform: translateX(0);
+            background: #fff;
+        }
+
+        /* 右侧卡片区域增强 */
+        .right{
+            flex:1;
+            min-width: 0;
+        }
+
+        /* 卡片样式升级增强 */
+        .card-list{
+            display:grid;
+            grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+            gap:25px;
+        }
+        .card{
+            background:white;
+            border-radius:12px;
+            overflow:hidden;
+            box-shadow:0 3px 15px rgba(0,0,0,0.07);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: #9E2D2A;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+        .card img{
+            width:100%;
+            height:200px;
+            object-fit:cover;
+            transition: transform 0.5s ease;
+        }
+        .card:hover img {
+            transform: scale(1.05);
+        }
+        .card .info{
+            padding:20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .card h4{
+            font-size:18px;
+            margin-bottom:8px;
+            font-weight: bold;
+            color: #9E2D2A;
+        }
+        .card p{
+            font-size:14px;
+            color:#777;
+            margin-top: auto;
+        }
+        .card:hover{
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .card .tag{
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(158, 45, 42, 0.85);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            backdrop-filter: blur(2px);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        .card:hover .tag {
+            transform: scale(1.1);
+            background: rgba(158, 45, 42, 0.95);
+        }
+		/* 卡片统计行（浏览+点赞+收藏） */
+		.card-stats{
+			display:flex;
+			gap:12px;
+			margin-top:8px;
+			font-size:13px;
+			color:#666;
+		}
+		.card-stat-item{
+			display:flex;
+			align-items:center;
+			gap:4px;
+			cursor:default;
+		}
+		.card-stat-item.clickable{
+			cursor:pointer;
+			transition:0.2s;
+		}
+		.card-stat-item.clickable:hover{
+			color:#9E2D2A;
+		}
+		.card-stat-item.active{
+			color:#9E2D2A;
+			font-weight:bold;
+		}
+
+        /* 页面切换 */
+        .page{
+            display:none;
+            animation: pageFadeIn 0.5s ease;
+        }
+        .page.active{
+            display:block;
+        }
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 详情页面样式增强 */
+        .detail-page {
+            padding: 40px 0;
+            background: #f7f4ee;
+        }
+        .detail-container {
+            width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: detailFadeIn 0.8s ease 0.2s forwards;
+        }
+        @keyframes detailFadeIn {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .detail-container img {
+            width: 100%;
+            height: 420px;
+            object-fit: cover;
+            transition: all 0.5s ease;
+        }
+        .detail-container:hover img {
+            transform: scale(1.02);
+        }
+        .detail-text {
+            padding: 40px;
+            position: relative;
+        }
+        .detail-tags {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .detail-tags span {
+            background: #f0e6dc;
+            color: #9E2D2A;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .detail-tags span::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transition: left 0.3s ease;
+        }
+        .detail-tags span:hover {
+            background: #9E2D2A;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(158, 45, 42, 0.3);
+        }
+        .detail-tags span:hover::after {
+            left: 100%;
+        }
+        .detail-text h2 {
+            color: #9E2D2A;
+            font-size: 32px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            position: relative;
+            padding-bottom: 15px;
+            font-weight: bold;
+        }
+        .detail-text h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: #9E2D2A;
+            border-radius: 4px;
+        }
+        .detail-text p {
+            font-size: 16px;
+            line-height: 2.2;
+            color: #333;
+            text-align: justify;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            font-size: 18px;
+            background: #9E2D2A;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        .back-btn:hover {
+            background: #b83b38;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(158, 45, 42, 0.3);
+        }
+
+        /* 热门推荐增强 */
+        .hot-list{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:15px;
+            margin-top:20px;
+        }
+        .hot-card{
+            background:white;
+            border-radius:8px;
+            overflow:hidden;
+            box-shadow:0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            cursor:pointer;
+            position: relative;
+        }
+        .hot-card img{
+            width:100%;
+            height:120px;
+            object-fit:cover;
+            transition: all 0.3s ease;
+        }
+        .hot-card .info{
+            padding:10px;
+        }
+        .hot-card h4{
+            font-size:15px;
+            margin-bottom:4px;
+            color:#9E2D2A;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .hot-card p{
+            font-size:12px;
+            color:#888;
+        }
+		.hot-stats{
+			display:flex;
+			gap:8px;
+			margin-top:6px;
+			font-size:12px;
+			color:#888;
+		}
+		.hot-stat-item{
+			display:flex;
+			align-items:center;
+			gap:3px;
+		}
+		.hot-stat-item.clickable{
+			cursor:pointer;
+		}
+		.hot-stat-item.clickable:hover{
+			color:#9E2D2A;
+		}
+		.hot-stat-item.active{
+			color:#9E2D2A;
+			font-weight:bold;
+		}
+        .hot-card:hover{
+            transform: translateY(-5px);
+            box-shadow:0 8px 15px rgba(0,0,0,0.1);
+        }
+        .hot-card:hover img {
+            transform: scale(1.08);
+        }
+        .hot-card:hover h4 {
+            color: #9E2D2A;
+        }
+
+        /* 展览卡片增强 */
+        .exhibition-list{
+            display:grid;
+            grid-template-columns:repeat(2,1fr);
+            gap:25px;
+            margin-top:20px;
+        }
+        .exhibition-card{
+            background:white;
+            border-radius:8px;
+            overflow:hidden;
+            box-shadow:0 2px 10px rgba(0,0,0,0.06);
+            display:flex;
+            transition: all 0.3s ease;
+        }
+        .exhibition-card:hover {
+            transform: translateY(-5px);
+            box-shadow:0 8px 20px rgba(0,0,0,0.1);
+        }
+        .exhibition-card img{
+            width:40%;
+            height:200px;
+            object-fit:cover;
+            transition: all 0.5s ease;
+        }
+        .exhibition-card:hover img {
+            transform: scale(1.05);
+        }
+        .exhibition-card .content{
+            flex:1;
+            padding:20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .exhibition-card h3{
+            font-size:19px;
+            color:#9E2D2A;
+            margin-bottom:10px;
+            display: flex;
+            align-items:center;
+            gap: 8px;
+            font-weight: bold;
+        }
+        .exhibition-card p{
+            font-size:14px;
+            color:#666;
+            line-height:1.8;
+            margin-bottom:10px;
+            flex: 1;
+        }
+        .exhibition-card .time{
+            font-size:13px;
+            color:#999;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+            display: flex;
+            align-items:center;
+            gap: 8px;
+        }
+        .exhibition-actions{
+            display:flex;
+            gap:15px;
+            margin-top:10px;
+            padding-top:10px;
+            border-top:1px dashed #eee;
+        }
+        .exhibition-actions .action-item{
+            display:flex;
+            align-items:center;
+            gap:5px;
+            font-size:13px;
+            color:#666;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .exhibition-actions .action-item.active{
+            color:#9E2D2A;
+            font-weight:bold;
+        }
+
+        /* 更多展览按钮 */
+        .more-btn{
+            display: inline-block;
+            padding: 6px 16px;
+            background: #9E2D2A;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: none;
+            white-space: nowrap;
+        }
+        .more-btn:hover{
+            background: #b83b38;
+            transform: translateY(-2px);
+        }
+
+        /* 返回顶部按钮增强 */
+        .back-top{
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #9E2D2A;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(158, 45, 42, 0.3);
+            z-index: 90;
+            transition: all 0.3s ease;
+            font-size: 20px;
+        }
+        .back-top:hover{
+            background: #b83b38;
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 6px 15px rgba(158, 45, 42, 0.4);
+        }
+
+        /* 统计数据展示（可点击） */
+        .stats-section {
+            background: linear-gradient(135deg, #9E2D2A, #7a201e);
+            color: white;
+            padding: 50px 0;
+            margin: 40px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(158, 45, 42, 0.3);
+            cursor: pointer;
+        }
+        .stats-container {
+            width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            text-align: center;
+        }
+        .stat-item {
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .stat-number {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .stat-label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 0;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(158, 45, 42, 0.2);
+            border-top: 4px solid #9E2D2A;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 评论详情页专用样式 */
+        .header {
+            display: none !important;
+        }
+        .detail-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .building-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(139,90,43,0.1);
+            border: 1px solid #d4b98c;
+        }
+        .building-img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        .building-info {
+            padding: 25px;
+        }
+        .building-title {
+            font-size: 28px;
+            color: #8b5a2b;
+            margin-bottom: 10px;
+        }
+        .building-meta {
+            color: #a67c52;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .building-desc {
+            font-size: 16px;
+            color: #5c4033;
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+        .building-stat{
+            display:flex;
+            gap:15px;
+            margin-top:10px;
+            color:#9E2D2A;
+            font-size:14px;
+        }
+        .detail-back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #9E2D2A;
+            color: #fff;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(158,45,42,0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            border: none;
+        }
+        .detail-back-btn:hover {
+            background: #b83b38;
+            transform: scale(1.1);
+        }
+        .action-bar {
+            display: flex;
+            gap: 20px;
+            padding: 15px 25px;
+            border-top: 1px solid #f0e6d6;
+            background: #fdfbf6;
+        }
+        .like-btn, .collect-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            color: #8b5a2b;
+            cursor: pointer;
+            transition: 0.3s;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .like-btn:hover, .collect-btn:hover {
+            background: #f0e6d6;
+        }
+        .like-btn.active {
+            color: #e63946;
+        }
+        .collect-btn.active {
+            color: #f5a623;
+        }
+        .like-count, .collect-count {
+            font-size: 14px;
+        }
+        .comment-section {
+            padding: 0 25px 25px 25px;
+        }
+        .comment-title {
+            font-size: 20px;
+            color: #8b5a2b;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d4b98c;
+        }
+        .comment-publish {
+            margin-bottom: 20px;
+        }
+        .comment-input {
+            width: 100%;
+            height: 100px;
+            padding: 12px 15px;
+            border: 1px solid #d4b98c;
+            border-radius: 8px;
+            resize: none;
+            font-size: 15px;
+            background: #faf6ed;
+            margin-bottom: 10px;
+        }
+        .comment-input:focus {
+            outline: none;
+            border-color: #8b5a2b;
+            background: white;
+        }
+        .publish-btn {
+            float: right;
+            padding: 8px 20px;
+            background: #8b5a2b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .publish-btn:hover {
+            background: #704214;
+        }
+        .comment-list {
+            margin-top: 20px;
+        }
+        .comment-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0e6d6;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .comment-left {
+            flex: 1;
+        }
+        .comment-right {
+            text-align: right;
+            min-width: 120px;
+            margin-left: 15px;
+        }
+        .comment-user {
+            font-weight: bold;
+            color: #8b5a2b;
+            margin-bottom: 5px;
+        }
+        .comment-time {
+            font-size: 12px;
+            color: #a67c52;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .comment-content {
+            font-size: 15px;
+            color: #5c4033;
+            line-height: 1.6;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e63946;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 3px 6px;
+            border-radius: 4px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .delete-btn:hover {
+            background: #fdecea;
+        }
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #d4b98c;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 6px 0;
+            z-index: 9999;
+            display: none;
+        }
+        .context-menu-item {
+            padding: 8px 15px;
+            font-size: 14px;
+            color: #8b5a2b;
+            cursor: pointer;
+        }
+        .context-menu-item:hover {
+            background: #f0e6d6;
+            color: #8b5a2b;
+        }
+        .context-menu-item.delete {
+            color: #e63946;
+        }
+        .clearfix::after {
+            content: "";
+            display: block;
+            clear: both;
+        }
+
+        /* AI问答悬浮按钮 */
+        .ai-chat-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 91;
+            transition: all 0.3s ease;
+            font-size: 24px;
+            border: none;
+        }
+        .ai-chat-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        /* AI聊天窗口 */
+        .ai-chat-window {
+            position: fixed;
+            bottom: 160px;
+            right: 30px;
+            width: 380px;
+            height: 520px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+            z-index: 92;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: chatSlideUp 0.3s ease;
+        }
+        @keyframes chatSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .ai-chat-window.show {
+            display: flex;
+        }
+        .ai-chat-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-chat-header h3 {
+            font-size: 16px;
+            margin: 0;
+        }
+        .ai-chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .ai-chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f5f5f5;
+        }
+        .ai-message {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .ai-message.user {
+            flex-direction: row-reverse;
+        }
+        .ai-message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .ai-message.ai .ai-message-avatar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .ai-message.user .ai-message-avatar {
+            background: #9E2D2A;
+            color: white;
+        }
+        .ai-message-content {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+        .ai-message.ai .ai-message-content {
+            background: white;
+            color: #333;
+            border-top-left-radius: 4px;
+        }
+        .ai-message.user .ai-message-content {
+            background: #9E2D2A;
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        .ai-chat-input {
+            padding: 12px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+        .ai-chat-input input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+        .ai-chat-input input:focus {
+            border-color: #667eea;
+        }
+        .ai-chat-input button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .ai-chat-input button:hover {
+            transform: scale(1.05);
+        }
+        .ai-chat-input button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .ai-typing {
+            display: inline-block;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 12px;
+            border-top-left-radius: 4px;
+        }
+        .ai-typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="nav" id="mainNav">
+        <div class="wrap">
+            <div class="logo">
+                <button class="admin-hidden-btn" id="adminHiddenBtn"></button>
+                中华传统建筑数字化科普平台
+            </div>
+            <ul class="menu">
+                <li><a onclick="go('home')">首页</a></li>
+                <li><a onclick="go('intro')">平台介绍</a></li>
+                <li><a onclick="go('build')">古建筑</a></li>
+                <li><a onclick="go('show')">展览</a></li>
+                <li><a onclick="go('about')">关于我们</a></li>
+                
+                <li class="my-menu" id="myMenuBtn">
+                    <a>我的</a>
+                    <div class="my-dropdown" id="myDropdown">
+                        <div class="my-dropdown-item" onclick="goMyLike()">我的点赞</div>
+                        <div class="my-dropdown-item" onclick="goMyCollect()">我的收藏</div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchInput" placeholder="搜索古建筑..."
+                         onkeydown="if(event.key==='Enter')search()" oninput="searchSuggest()" onclick="showSearchRecommend()">
+                        <button class="search-btn" onclick="search()">搜索</button>
+                        <div class="search-suggest" id="searchSuggest"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="back-top" id="backTop" onclick="scrollToTop()">↑</div>
+
+    <!-- AI问答悬浮按钮 -->
+    <button class="ai-chat-btn" id="aiChatBtn" onclick="toggleChat()">💬</button>
+
+    <!-- AI聊天窗口 -->
+    <div class="ai-chat-window" id="aiChatWindow">
+        <div class="ai-chat-header">
+            <h3>🤖 古建AI助手</h3>
+            <button class="ai-chat-close" onclick="toggleChat()">✕</button>
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-message ai">
+                <div class="ai-message-avatar">🤖</div>
+                <div class="ai-message-content">
+                    你好！我是古建筑AI助手，可以问我任何关于中国古建筑的问题哦～比如：<br>
+                    • 故宫是什么朝代建的？<br>
+                    • 斗拱是什么结构？<br>
+                    • 唐代建筑有什么特点？
+                </div>
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <input type="text" id="aiChatInput" placeholder="输入你的问题..." onkeydown="if(event.key==='Enter')sendAiMessage()">
+            <button id="aiSendBtn" onclick="sendAiMessage()">发送</button>
+        </div>
+    </div>
+<!-- 豆包2.0lite,电脑网页,2026年3月20日 -->
+    <!-- 首页 -->
+    <div class="page active" id="home">
+
+    <div class="swiper">
+            <div class="swiper-text">
+                <h1>中华传统建筑数字化科普平台</h1>
+                <p>跨越千年的营造智慧，沉浸式领略中华建筑之美，探索唐、宋、元、明、清历代经典古建筑的艺术魅力与文化内涵。</p>
+            </div>
+            <div class="swiper-btn">
+                <a onclick="go('build')">探索古建筑宝库</a>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="section" id="section1">
+                <h2>欢迎来到中华传统建筑数字化科普平台</h2>
+                <p>本平台以古建筑为核心，收录唐、宋、元、明、清历代经典古建筑，按照朝代与建筑类型进行数字化分类展示，
+                    提供结构、历史、文化价值科普介绍，面向大众普及中国古代建筑艺术与营造技艺。</p>
+                <p style="margin-top:15px;">平台依托高精度数字采集技术，还原古建筑的形制、结构、彩画、装饰等细节特征，
+                    让用户足不出户即可领略中国古代建筑的艺术魅力与营造智慧。</p>
+            </div>
+
+            <div class="stats-section" onclick="go('build')">
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <span class="stat-number">7</span>
+                        <span class="stat-label">历史朝代</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">7</span>
+                        <span class="stat-label">建筑类型</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="statTotal"></span>
+                        <span class="stat-label">经典古建筑</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">数字高清还原</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section2">
+                <h2>热门古建筑推荐</h2>
+                <div class="hot-list" id="hotList">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section3">
+                <h2>热门展览推荐</h2>
+                <div class="exhibition-list" id="homeExhibitList">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 平台介绍 -->
+    <div class="page" id="intro">
+        <div class="container">
+            <div class="section" id="introSection1">
+                <h2>平台介绍</h2>
+                <p>本平台为古建筑科普展示系统，是集知识普及、数字展示、文化传播于一体的综合性平台，
+                    主要功能包括：按朝代分类、按建筑类型分类、古建筑详情展示、图文科普介绍、高清影像展示等。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 中华传统建筑数字化科普平台 -->
+    <div class="page" id="build">
+        <div class="build-title">
+            <h2>中华传统建筑数字化科普平台</h2>
+        </div>
+        <div class="full-container">
+            <div class="left">
+                <h3>按朝代</h3>
+                <ul id="dynastyList">
+                    <li onclick="filterNoScroll('全部','朝代')">全部建筑</li>
+                    <li onclick="filterNoScroll('唐代','朝代')">唐代建筑</li>
+                    <li onclick="filterNoScroll('宋代','朝代')">宋代建筑</li>
+                    <li onclick="filterNoScroll('辽代','朝代')">辽代建筑</li>
+                    <li onclick="filterNoScroll('金代','朝代')">金代建筑</li>
+                    <li onclick="filterNoScroll('元代','朝代')">元代建筑</li>
+                    <li onclick="filterNoScroll('明代','朝代')">明代建筑</li>
+                    <li onclick="filterNoScroll('清代','朝代')">清代建筑</li>
+                </ul>
+                <h3>按类型</h3>
+                <ul id="typeList">
+                    <li onclick="filterNoScroll('全部','类型')">全部类型</li>
+                    <li onclick="filterNoScroll('宫殿','类型')">宫殿</li>
+                    <li onclick="filterNoScroll('寺庙','类型')">寺庙</li>
+                    <li onclick="filterNoScroll('园林','类型')">园林</li>
+                    <li onclick="filterNoScroll('塔','类型')">塔</li>
+                    <li onclick="filterNoScroll('楼阁','类型')">楼阁</li>
+                    <li onclick="filterNoScroll('民居','类型')">民居</li>
+                    <li onclick="filterNoScroll('祠堂','类型')">祠堂</li>
+                </ul>
+            </div>
+            <div class="right">
+                <div class="card-list" id="cardList">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 我的点赞页面 -->
+    <div class="page" id="myLikePage">
+        <div class="container">
+            <div class="section" 
+            style="display:flex;
+             align-items:center; 
+             gap:15px;">
+                <button class="back-btn" onclick="go('home')" style="margin:0;">&lt;</button>
+                <h2 style="margin:0;">我赞过的内容</h2>
+            </div>
+            <div class="card-list" id="myLikeList"></div>
+        </div>
+    </div>
+
+    <!-- 我的收藏页面 -->
+    <div class="page" id="myCollectPage">
+        <div class="container">
+            <div class="section" style="display:flex; align-items:center; gap:15px;">
+                <button class="back-btn" onclick="go('home')" style="margin:0;">&lt;</button>
+                <h2 style="margin:0;">我收藏的内容</h2>
+            </div>
+            <div class="card-list" id="myCollectList"></div>
+        </div>
+    </div>
+<!-- 豆包2.0lite,电脑网页,2026年3月21日 -->
+    <!-- 展览主页面 -->
+    <div class="page" id="show">
+        <div class="container">
+            <div class="section" id="showSection1">
+                <div class="section-header">
+                    <h2>常设展览</h2>
+                    <button class="more-btn" onclick="go('exhibitAll')">更多</button>
+                </div>
+                <div class="exhibition-list" id="exhibitList"></div>
+            </div>
+            <div class="section" id="showSection2">
+                <div class="section-header">
+                    <h2>临时展览</h2>
+                    <button class="more-btn" onclick="go('tempExhibitAll')">更多</button>
+                </div>
+                <div class="exhibition-list" id="tempExhibitList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全部常设展览 -->
+    <div class="page" id="exhibitAll">
+        <div class="container">
+            <div class="section" style="display:flex; align-items:center; gap:15px;">
+                <button class="back-btn" onclick="go('show')" style="margin:0;">&lt;</button>
+                <h2 style="margin:0;">全部常设展览</h2>
+            </div>
+            <div class="exhibition-list" id="allExhibitList"></div>
+        </div>
+    </div>
+
+    <!-- 全部临时展览 -->
+    <div class="page" id="tempExhibitAll">
+        <div class="container">
+            <div class="section" style="display:flex; align-items:center; gap:15px;">
+                <button class="back-btn" onclick="go('show')" style="margin:0;">&lt;</button>
+                <h2 style="margin:0;">全部临时展览</h2>
+            </div>
+            <div class="exhibition-list" id="allTempExhibitList"></div>
+        </div>
+    </div>
+
+    <!-- 关于我们 -->
+    <div class="page" id="about">
+        <div class="container">
+            <div class="section" id="aboutSection1">
+                <h2>关于我们</h2>
+                <p>本网站为学习展示用途，专注中国古建筑文化科普与数字化展示。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 评论详情页面 -->
+    <div class="page" id="commentPage">
+        <div class="container detail-container">
+            <div class="building-card">
+                <div style="padding:20px 25px 0; display:flex; align-items:center; gap:15px;">
+                    <button class="detail-back-btn" onclick="goBack()">&lt;</button>
+                </div>
+                
+                <img id="commentBuildingImg" class="building-img">
+                <div class="building-info">
+                    <h2 class="building-title" id="commentBuildingTitle"></h2>
+                    <div class="building-meta" id="commentBuildingMeta"></div>
+                    <div class="building-stat" id="commentBuildingStat"></div>
+                    <p class="building-desc" id="commentBuildingDesc"></p>
+                </div>
+
+                <div class="action-bar">
+                    <button class="like-btn" id="likeBtn">
+                        <span class="iconfont">&#xe65e;</span> <span class="like-count" id="likeCount"></span>
+                    </button>
+                    <button class="collect-btn" id="collectBtn">
+                        <span class="iconfont">&#xeb45;</span> <span class="collect-count" id="collectCount"></span>
+                    </button>
+                </div>
+
+                <div class="comment-section">
+                    <h3 class="comment-title">评论区</h3>
+                    <div class="comment-publish clearfix">
+                        <textarea class="comment-input" id="commentInput" placeholder="分享你的看法..."></textarea>
+                        <button class="publish-btn" id="publishBtn">发布评论</button>
+                    </div>
+                    <div class="comment-list" id="commentList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item delete" id="deleteComment">删除评论</div>
+    </div>
+
+    <script>
+        // 初始化默认建筑数据（点赞默认=0）
+        const defaultBuildData = [
+            {id:0,title:"虚拟占位",dynasty:"",type:"",img:"",text:"",view:0,like:0,collect:0},
+        ];
+
+        const defaultExhibitNormal = [];
+        const defaultExhibitTemp = [];
+
+        // 本地存储初始化（强制 like = 0）
+        if (!localStorage.getItem("buildData")) {
+            let initData = [...defaultBuildData];
+            initData.forEach(item => {
+                item.like = 0;
+                item.collect = 0;
+                item.view = 0;
+            });
+            localStorage.setItem("buildData", JSON.stringify(initData));
+        }
+        if (!localStorage.getItem("exhibitNormalData")) {
+            localStorage.setItem("exhibitNormalData", JSON.stringify(defaultExhibitNormal));
+        }
+        if (!localStorage.getItem("exhibitTempData")) {
+            localStorage.setItem("exhibitTempData", JSON.stringify(defaultExhibitTemp));
+        }
+// 豆包2.0lite,电脑网页、2026年3月22日
+        // 获取数据
+        function getData() {
+            return JSON.parse(localStorage.getItem("buildData"));
+        }
+        function getExhibitData() {
+            const normal = JSON.parse(localStorage.getItem("exhibitNormalData") || "[]");
+            const temp = JSON.parse(localStorage.getItem("exhibitTempData") || "[]");
+            return [...normal, ...temp];
+        }
+
+        const data = getData();
+        const exhibitData = getExhibitData();
+        
+        // 热门排序
+        const hotData = data.slice(1).sort((a,b)=>{
+            let scoreA = (a.like||0)*2 + (a.collect||0)*3 + (a.view||0)*0.1;
+            let scoreB = (b.like||0)*2 + (b.collect||0)*3 + (b.view||0)*0.1;
+            return scoreB - scoreA;
+        }).map(item=>data.indexOf(item));
+
+        const sortedExhibit = [...exhibitData].sort((a,b)=>{
+            let scoreA = (a.like||0)*2 + (a.collect||0)*3;
+            let scoreB = (b.like||0)*2 + (b.collect||0)*3;
+            return scoreB - scoreA;
+        });
+        
+        let currentDynasty = "全部";
+        let currentType = "全部";
+        let lastPage = "home";
+        let exhibitLikeStatus = Array(exhibitData.length).fill(false);
+        let exhibitCollectStatus = Array(exhibitData.length).fill(false);
+        let currentOpenId = null;
+
+        // 用户点赞收藏
+        function getMyLike(){ return JSON.parse(localStorage.getItem('myLike') || '[]'); }
+        function getMyCollect(){ return JSON.parse(localStorage.getItem('myCollect') || '[]'); }
+
+        // 页面切换
+        function go(id) {
+          document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+          document.getElementById(id).classList.add('active');
+          if(id === 'commentPage'){ document.getElementById('mainNav').style.display = 'none'; }
+          else{ document.getElementById('mainNav').style.display = 'flex'; }
+          if (id === 'build') { setTimeout(renderCards, 100); }
+          if (id !== 'commentPage') lastPage = id;
+          window.scrollTo({top:0,behavior:'smooth'});
+          setTimeout(initAnimations,300);
+        }
+        function goBack() { go(lastPage); }
+
+        // 渲染建筑卡片
+        function renderCards() {
+            document.getElementById('cardList').innerHTML = `<div class="loading"><div class="loading-spinner"></div></div>`;
+            setTimeout(()=>{
+                const list = data.filter((item,i)=>{
+                    if(i===0) return false;
+                    const md = currentDynasty==="全部" || item.dynasty.includes(currentDynasty);
+                    const mt = currentType==="全部" || item.type===currentType;
+                    return md&&mt;
+                });
+                if(list.length===0){
+                    document.getElementById('cardList').innerHTML=`<div style="text-align:center;padding:50px;color:#666;"><h3>暂无相关建筑</h3></div>`;
+                    return;
+                }
+                const html = list.map(item=>{
+					const i = data.indexOf(item);
+					const isLiked = getMyLike().includes(`build_${i}`);
+					const isCollected = getMyCollect().includes(`build_${i}`);
+					return `
+					<div class="card" onclick="openCommentPage(${i})">
+						<img src="${item.img}">
+						<span class="tag">${item.dynasty}</span>
+						<div class="info">
+							<h4>${item.title}</h4>
+							<p>${item.dynasty}·${item.type}</p>
+							<div class="card-stats">
+								<div class="card-stat-item">
+								<span class="iconfont">&#xe650;</span> ${item.view||0}
+								</div>
+								</div>
+							</div>
+						</div>
+					</div>`;
+				}).join('');
+                document.getElementById('cardList').innerHTML=html;
+            },500);
+        }
+
+        // 渲染热门建筑
+        function renderHotList(){
+            document.getElementById('hotList').innerHTML=`<div class="loading"><div class="loading-spinner"></div></div>`;
+            setTimeout(()=>{
+                const html=hotData.map(i=>{
+					const item = data[i];
+					const isLiked = getMyLike().includes(`build_${i}`);
+					const isCollected = getMyCollect().includes(`build_${i}`);
+					return `
+					<div class="hot-card" onclick="openCommentPage(${i})">
+						<img src="${item.img}">
+						<div class="info">
+							<h4>${item.title}</h4>
+							<p>${item.dynasty}·${item.type}</p>
+							<div class="hot-stats">
+								<div class="hot-stat-item"><span class="iconfont">&#xe650;</span> ${item.view||0}</div>
+								<div class="hot-stat-item clickable ${isLiked?'active':''}" onclick="event.stopPropagation();toggleCardLike(${i})"><span class="iconfont">&#xe65e;</span>  ${item.like||0}</div>
+								<div class="hot-stat-item clickable ${isCollected?'active':''}" onclick="event.stopPropagation();toggleCardCollect(${i})"><span class="iconfont">&#xeb45;</span>  ${item.collect||0}</div>
+							</div>
+						</div>
+					</div>`;
+				}).join('');
+                document.getElementById('hotList').innerHTML=html;
+            },500);
+        }
+
+        // 渲染首页展览
+        function renderHomeExhibit(){
+            const list = sortedExhibit.slice(0,2);
+            const html = list.map((item,idx)=>{
+                return `
+                <div class="exhibition-card">
+                    <img src="${item.img}">
+                    <div class="content">
+                        <h3>${item.name}</h3>
+                        <p>${item.desc}</p>
+                        <div class="time">${item.time} | ${item.place}</div>
+                        <div class="exhibition-actions">
+                            <div class="action-item ${exhibitLikeStatus[idx]?'active':''}" onclick="toggleExhibitLike(${idx})">
+                                <span class="iconfont">&#xe65e;</span> ${item.like||0}
+                                </div>
+                            <div class="action-item ${exhibitCollectStatus[idx]?'active':''}" onclick="toggleExhibitCollect(${idx})">
+                               <span class="iconfont">&#xeb45;</span> ${item.collect||0}
+                                </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('homeExhibitList').innerHTML = html;
+        }
+
+        // 渲染展览
+        function renderExhibitList(){
+			const normalData = JSON.parse(localStorage.getItem("exhibitNormalData")||"[]");
+            const html=normalData.map((item,idx)=>`
+            <div class="exhibition-card">
+                <img src="${item.img}">
+                <div class="content">
+                    <h3>${item.name}</h3><p>${item.desc}</p>
+                    <div class="time">${item.time} | ${item.place}</div>
+                    <div class="exhibition-actions">
+                        <div class="action-item ${exhibitLikeStatus[idx]?'active':''}" onclick="toggleExhibitLike(${idx})">
+                            <span class="iconfont">&#xe65e;</span> ${item.like||0}
+                        </div>
+                        <div class="action-item ${exhibitCollectStatus[idx]?'active':''}" onclick="toggleExhibitCollect(${idx})">
+                             <span class="iconfont">&#xeb45;</span> ${item.collect||0}
+                         </div>
+                    </div>
+                </div>
+            </div>`).join('');
+            document.getElementById('exhibitList').innerHTML=html;
+        }
+        function renderAllExhibit(){
+			const normalData = JSON.parse(localStorage.getItem("exhibitNormalData")||"[]");
+            const html=normalData.map((item,idx)=>`
+            <div class="exhibition-card">
+                <img src="${item.img}"><div class="content">
+                    <h3>${item.name}</h3><p>${item.desc}</p>
+                    <div class="time">${item.time} | ${item.place}</div>
+                    <div class="exhibition-actions">
+                        <div class="action-item ${exhibitLikeStatus[idx]?'active':''}" onclick="toggleExhibitLike(${idx})">
+							<span class="iconfont">&#xe65e;</span> ${item.like||0}
+						</div>
+                        <div class="action-item ${exhibitCollectStatus[idx]?'active':''}" onclick="toggleExhibitCollect(${idx})">
+							<span class="iconfont">&#xeb45;</span> ${item.collect||0}
+						</div>
+                    </div>
+                </div>
+            </div>`).join('');
+            document.getElementById('allExhibitList').innerHTML=html;
+        }
+        function renderTempExhibit(){
+			const tempData = JSON.parse(localStorage.getItem("exhibitTempData")||"[]");
+            const html=tempData.map((item,idx)=>`
+            <div class="exhibition-card">
+                <img src="${item.img}"><div class="content">
+                    <h3>${item.name}</h3><p>${item.desc}</p>
+                    <div class="time">${item.time} | ${item.place}</div>
+                    <div class="exhibition-actions">
+                        <div class="action-item ${exhibitLikeStatus[idx]?'active':''}" onclick="toggleExhibitLike(${idx})">
+							<span class="iconfont">&#xe65e;</span> ${item.like||0}
+						</div>
+                        <div class="action-item ${exhibitCollectStatus[idx]?'active':''}" onclick="toggleExhibitCollect(${idx})">
+							 <span class="iconfont">&#xeb45;</span> ${item.collect||0}
+						</div>
+                    </div>
+                </div>
+            </div>`).join('');
+            document.getElementById('tempExhibitList').innerHTML=html;
+        }
+		
+		// 渲染全部临时展览
+		function renderAllTempExhibit(){
+			const tempData = JSON.parse(localStorage.getItem("exhibitTempData")||"[]");
+			const html=tempData.map((item,idx)=>`
+			<div class="exhibition-card">
+				<img src="${item.img}"><div class="content">
+					<h3>${item.name}</h3><p>${item.desc}</p>
+					<div class="time">${item.time} | ${item.place}</div>
+					<div class="exhibition-actions">
+						<div class="action-item ${exhibitLikeStatus[idx]?'active':''}" onclick="toggleExhibitLike(${idx})">
+							<span class="iconfont">&#xe65e;</span> ${item.like||0}
+						</div>
+						<div class="action-item ${exhibitCollectStatus[idx]?'active':''}" onclick="toggleExhibitCollect(${idx})">
+							<span class="iconfont">&#xeb45;</span> ${item.collect||0}
+						</div>
+					</div>
+				</div>
+			</div>`).join('');
+			document.getElementById('allTempExhibitList').innerHTML=html;
+		}
+
+		// 卡片点赞
+		function toggleCardLike(id){
+			let item = data[id];
+			let myLike = getMyLike();
+			let key = `build_${id}`;
+			let has = myLike.includes(key);
+			
+			if(!has){
+				item.like = (item.like||0)+1;
+				myLike.push(key);
+			}else{
+				item.like = (item.like||0)-1;
+				myLike = myLike.filter(k=>k!==key);
+			}
+			
+			localStorage.setItem('buildData',JSON.stringify(data));
+			localStorage.setItem('myLike',JSON.stringify(myLike));
+			renderCards();
+			renderHotList();
+			if(currentOpenId===id) refreshDetailStatus();
+		}
+		
+		// 卡片收藏
+		function toggleCardCollect(id){
+			let item = data[id];
+			let myCollect = getMyCollect();
+			let key = `build_${id}`;
+			let has = myCollect.includes(key);
+			
+			if(!has){
+				item.collect = (item.collect||0)+1;
+				myCollect.push(key);
+			}else{
+				item.collect = (item.collect||0)-1;
+				myCollect = myCollect.filter(k=>k!==key);
+			}
+			
+			localStorage.setItem('buildData',JSON.stringify(data));
+			localStorage.setItem('myCollect',JSON.stringify(myCollect));
+			renderCards();
+			renderHotList();
+			if(currentOpenId===id) refreshDetailStatus();
+		}
+
+        // 展览点赞收藏
+        function toggleExhibitLike(idx){
+			let item = exhibitData[idx];
+			let myLike=getMyLike();
+			let key=`ex_${idx}`;
+			let has=myLike.includes(key);
+			
+			exhibitLikeStatus[idx]=!exhibitLikeStatus[idx];
+			if(exhibitLikeStatus[idx]){
+				item.like=(item.like||0)+1;
+				if(!has) myLike.push(key);
+			}else{
+				item.like=(item.like||0)-1;
+				myLike=myLike.filter(i=>i!==key);
+			}
+			
+			localStorage.setItem('myLike',JSON.stringify(myLike));
+			const normal = JSON.parse(localStorage.getItem("exhibitNormalData")||"[]");
+			const temp = JSON.parse(localStorage.getItem("exhibitTempData")||"[]");
+			if(idx < normal.length){
+				normal[idx] = item;
+				localStorage.setItem("exhibitNormalData",JSON.stringify(normal));
+			}else{
+				temp[idx-normal.length] = item;
+				localStorage.setItem("exhibitTempData",JSON.stringify(temp));
+			}
+			
+			renderExhibitList();
+			renderAllExhibit();
+			renderHomeExhibit();
+			renderTempExhibit();
+			renderAllTempExhibit();
+		}
+		
+        function toggleExhibitCollect(idx){
+			let item = exhibitData[idx];
+			let myCollect=getMyCollect();
+			let key=`ex_${idx}`;
+			let has=myCollect.includes(key);
+			
+			exhibitCollectStatus[idx]=!exhibitCollectStatus[idx];
+			if(exhibitCollectStatus[idx]){
+				item.collect=(item.collect||0)+1;
+				if(!has) myCollect.push(key);
+			}else{
+				item.collect=(item.collect||0)-1;
+				myCollect=myCollect.filter(i=>i!==key);
+			}
+			
+			localStorage.setItem('myCollect',JSON.stringify(myCollect));
+			const normal = JSON.parse(localStorage.getItem("exhibitNormalData")||"[]");
+			const temp = JSON.parse(localStorage.getItem("exhibitTempData")||"[]");
+			if(idx < normal.length){
+				normal[idx] = item;
+				localStorage.setItem("exhibitNormalData",JSON.stringify(normal));
+			}else{
+				temp[idx-normal.length] = item;
+				localStorage.setItem("exhibitTempData",JSON.stringify(temp));
+			}
+			
+			renderExhibitList();
+			renderAllExhibit();
+			renderHomeExhibit();
+			renderTempExhibit();
+			renderAllTempExhibit();
+		}
+
+        // 筛选
+        function filterNoScroll(val,kind){
+            if(kind==="朝代"){ 
+                currentDynasty=val; 
+                document.querySelectorAll("#dynastyList li").forEach(li=>li.classList.remove("active")); 
+            }else{ 
+                currentType=val; 
+                document.querySelectorAll("#typeList li").forEach(li=>li.classList.remove("active")); 
+            }
+            if(event&&event.target)event.target.classList.add("active");
+            renderCards();
+        }
+
+        // 打开详情页
+        function openCommentPage(i){
+            data[i].view=(data[i].view||0)+1; 
+            localStorage.setItem('buildData',JSON.stringify(data));
+            currentOpenId=i;
+            const item=data[i];
+            document.getElementById('commentBuildingImg').src=item.img;
+            document.getElementById('commentBuildingTitle').innerText=item.title;
+            document.getElementById('commentBuildingMeta').innerText=`${item.dynasty} | ${item.type}`;
+            document.getElementById('commentBuildingStat').innerHTML=`
+				<span class="iconfont">&#xe650;</span> ${item.view||0} ｜ 
+                <span class="iconfont">&#xe65e;</span> ${item.like||0} ｜ 
+                <span class="iconfont">&#xeb45;</span>${item.collect||0}
+			`;
+            document.getElementById('commentBuildingDesc').innerText=item.text;
+            document.getElementById('likeCount').innerText=item.like||0;
+            document.getElementById('collectCount').innerText=item.collect||0;
+            let myLike=getMyLike();
+            let myCollect=getMyCollect();
+            document.getElementById('likeBtn').classList.toggle('active',myLike.includes(`build_${i}`));
+            document.getElementById('collectBtn').classList.toggle('active',myCollect.includes(`build_${i}`));
+            go('commentPage');
+        }
+		
+		// 刷新详情状态
+		function refreshDetailStatus(){
+			if(currentOpenId===null) return;
+			const item = data[currentOpenId];
+			document.getElementById('likeCount').innerText = item.like||0;
+			document.getElementById('collectCount').innerText = item.collect||0;
+			document.getElementById('commentBuildingStat').innerHTML=`
+				<span class="iconfont">&#xe650;</span>  ${item.view||0} ｜
+                 <span class="iconfont">&#xe65e;</span> ${item.like||0} ｜
+                  <span class="iconfont">&#xeb45;</span> ${item.collect||0}
+			`;
+            let myLike=getMyLike();
+            let myCollect=getMyCollect();
+            document.getElementById('likeBtn').classList.toggle('active',myLike.includes(`build_${currentOpenId}`));
+            document.getElementById('collectBtn').classList.toggle('active',myCollect.includes(`build_${currentOpenId}`));
+		}
+
+        // 搜索功能
+        function getSearchHistory(){
+            return JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        }
+        function saveSearchHistory(keyword){
+            if(!keyword) return;
+            let history = getSearchHistory();
+            history = history.filter(k=>k!==keyword);
+            history.unshift(keyword);
+            if(history.length>8) history = history.slice(0,8);
+            localStorage.setItem('searchHistory',JSON.stringify(history));
+        }
+
+        function showSearchRecommend(){
+            const history = getSearchHistory();
+            const box = document.getElementById('searchSuggest');
+            if(history.length===0){
+                box.style.display='none';
+                return;
+            }
+            let html = `<div style="padding:6px 12px;font-size:12px;color:#999;">搜索历史</div>`;
+            html += history.map(k=>`
+                <div class="search-suggest-item" onclick="selectSuggest('${k}')">${k}</div>
+            `).join('');
+            box.innerHTML = html;
+            box.style.display = 'block';
+        }
+
+        function searchSuggest(){
+            const key = document.getElementById('searchInput').value.trim().toLowerCase();
+            const box = document.getElementById('searchSuggest');
+            if(!key){
+                showSearchRecommend();
+                return;
+            }
+            const buildResults = data.filter((item,i)=>i!==0 && (
+                item.title.toLowerCase().includes(key) ||
+                item.dynasty.toLowerCase().includes(key) ||
+                item.type.toLowerCase().includes(key)
+            ));
+            const exResults = exhibitData.filter(item=>(
+                item.name.toLowerCase().includes(key) ||
+                item.desc.toLowerCase().includes(key)
+            ));
+            const allResults = [...buildResults, ...exResults];
+            if(allResults.length===0){
+                box.style.display='none';
+                return;
+            }
+            let html = '';
+            if(buildResults.length>0) html+=`<div style="padding:6px 12px;font-size:12px;color:#999;">古建筑</div>`;
+            html += buildResults.map(item=>`
+                <div class="search-suggest-item" onclick="selectSuggest('${item.title}')">${item.title}</div>
+            `).join('');
+            if(exResults.length>0) html+=`<div style="padding:6px 12px;font-size:12px;color:#999;">展览</div>`;
+            html += exResults.map(item=>`
+                <div class="search-suggest-item" onclick="selectSuggest('${item.name}')">${item.name}</div>
+            `).join('');
+            box.innerHTML = html;
+            box.style.display = 'block';
+        }
+
+        function selectSuggest(title){
+            document.getElementById('searchInput').value = title;
+            saveSearchHistory(title);
+            document.getElementById('searchSuggest').style.display='none';
+            search();
+        }
+
+        function search(){
+            const key = document.getElementById('searchInput').value.trim().toLowerCase();
+            if(!key){ alert("请输入搜索关键词"); return; }
+            saveSearchHistory(key);
+            go('build');
+            const buildRes = data.filter((item,i)=>i!==0 && (
+                item.title.toLowerCase().includes(key) ||
+                item.dynasty.toLowerCase().includes(key) ||
+                item.type.toLowerCase().includes(key)
+            ));
+            const exRes = exhibitData.filter(item=>(
+                item.name.toLowerCase().includes(key) ||
+                item.desc.toLowerCase().includes(key)
+            ));
+            if(buildRes.length>0){
+                setTimeout(()=>openCommentPage(data.indexOf(buildRes[0])),500);
+                currentDynasty='全部'; currentType='全部';
+                renderCards();
+            }else if(exRes.length>0){
+                go('show');
+            }else{
+                alert("未找到相关内容");
+            }
+            document.getElementById('searchSuggest').style.display='none';
+        }
+
+        // 返回顶部
+        function scrollToTop(){window.scrollTo({top:0,behavior:'smooth'});}
+        window.addEventListener('scroll',()=>{
+            const backTop=document.getElementById('backTop');
+            backTop.style.display=window.scrollY>300?'flex':'none';
+            const nav=document.getElementById('mainNav');
+            if(window.scrollY>50){nav.classList.add('scroll');}else{nav.classList.remove('scroll');}
+            initAnimations();
+        });
+
+        // 动画
+        function initAnimations(){
+            document.querySelectorAll('.section').forEach(section=>{
+                const rect=section.getBoundingClientRect();
+                if(rect.top<window.innerHeight-100)section.classList.add('animate');
+            });
+        }
+
+        // 详情页点赞收藏
+        document.getElementById('likeBtn').onclick=()=>{
+            if(currentOpenId===null)return;
+			toggleCardLike(currentOpenId);
+        }
+        document.getElementById('collectBtn').onclick=()=>{
+            if(currentOpenId===null)return;
+			toggleCardCollect(currentOpenId);
+        }
+
+        // 评论功能
+        document.getElementById('publishBtn').onclick=()=>{
+            let content=document.getElementById('commentInput').value.trim();
+            if(!content){alert('请输入评论内容');return;}
+            let now=new Date();
+            let time=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            let comment={user:'我',content:content,time:time};
+            let cs=JSON.parse(localStorage.getItem('comments')||'[]');
+            cs.unshift(comment);
+            localStorage.setItem('comments',JSON.stringify(cs));
+            document.getElementById('commentInput').value='';
+            loadComments();
+            alert('发布成功！');
+        }
+        function loadComments(){
+            let cs=JSON.parse(localStorage.getItem('comments')||'[]');
+            let html=cs.map(c=>`
+            <div class="comment-item">
+                <div class="comment-left">
+                    <div class="comment-user">${c.user||'游客'}</div>
+                    <div class="comment-content">${c.content}</div>
+                </div>
+                <div class="comment-right">
+                    <span class="comment-time">${c.time}</span>
+                    <button class="delete-btn" onclick="delComment(this)">删除</button>
+                </div>
+            </div>`).join('');
+            document.getElementById('commentList').innerHTML=html;
+        }
+        function delComment(e){
+            if(confirm('确定删除？')){
+                let cs=JSON.parse(localStorage.getItem('comments')||'[]');
+                let items=document.querySelectorAll('.comment-item');
+                let index=Array.from(items).indexOf(e.closest('.comment-item'));
+                cs.splice(index,1);
+                localStorage.setItem('comments',JSON.stringify(cs));
+                loadComments();
+            }
+        }
+
+        // 我的菜单
+        document.getElementById('myMenuBtn').onclick=(e)=>{
+            e.stopPropagation();
+            document.getElementById('myDropdown').classList.toggle('show');
+        }
+        document.onclick=()=>{
+            document.getElementById('myDropdown').classList.remove('show');
+        }
+
+        // 我的点赞/收藏
+        function goMyLike(){
+            go('myLikePage');
+            let myLike=getMyLike();
+            let list=[];
+            myLike.forEach(key=>{
+                if(key.startsWith('build_')){
+                    let id=parseInt(key.split('_')[1]);
+                    if(data[id]) list.push({type:'build',data:data[id],id});
+                }
+                if(key.startsWith('ex_')){
+                    let id=parseInt(key.split('_')[1]);
+                    if(exhibitData[id]) list.push({type:'ex',data:exhibitData[id],id});
+                }
+            });
+            if(list.length===0){
+                document.getElementById('myLikeList').innerHTML=`<div style="text-align:center;padding:40px;color:#666;">暂无点赞</div>`;
+                return;
+            }
+            let html=list.map(item=>`
+            <div class="card" onclick="${item.type==='build'?`openCommentPage(${item.id})`:`go('show')`}">
+                <img src="${item.data.img}">
+                <span class="tag">${item.type==='build'?item.data.dynasty:'展览'}</span>
+                <div class="info">
+                    <h4>${item.data.title||item.data.name}</h4>
+                    <p>${item.type==='build'?`${item.data.dynasty}·${item.data.type}`:'展览'}</p>
+                </div>
+            </div>`).join('');
+            document.getElementById('myLikeList').innerHTML=html;
+        }
+
+        function goMyCollect(){
+            go('myCollectPage');
+            let myCollect=getMyCollect();
+            let list=[];
+            myCollect.forEach(key=>{
+                if(key.startsWith('build_')){
+                    let id=parseInt(key.split('_')[1]);
+                    if(data[id]) list.push({type:'build',data:data[id],id});
+                }
+                if(key.startsWith('ex_')){
+                    let id=parseInt(key.split('_')[1]);
+                    if(exhibitData[id]) list.push({type:'ex',data:exhibitData[id],id});
+                }
+            });
+            if(list.length===0){
+                document.getElementById('myCollectList').innerHTML=`<div style="text-align:center;padding:40px;color:#666;">暂无收藏</div>`;
+                return;
+            }
+            let html=list.map(item=>`
+            <div class="card" onclick="${item.type==='build'?`openCommentPage(${item.id})`:`go('show')`}">
+                <img src="${item.data.img}">
+                <span class="tag">${item.type==='build'?item.data.dynasty:'展览'}</span>
+                <div class="info">
+                    <h4>${item.data.title||item.data.name}</h4>
+                    <p>${item.type==='build'?`${item.data.dynasty}·${item.data.type}`:'展览'}</p>
+                </div>
+            </div>`).join('');
+            document.getElementById('myCollectList').innerHTML=html;
+        }
+
+        // 初始化
+        window.addEventListener('load',()=>{
+            renderCards();
+            renderHotList();
+            renderHomeExhibit();
+            renderExhibitList();
+            renderTempExhibit();
+            renderAllExhibit();
+            renderAllTempExhibit();
+            initAnimations();
+            loadComments();
+            document.querySelector('#dynastyList li').classList.add('active');
+            document.querySelector('#typeList li').classList.add('active');
+            document.getElementById('statTotal').innerText=data.length-1;
+        });
+
+        // 图片错误处理
+        document.addEventListener('error',(e)=>{
+            if(e.target.tagName==='IMG')e.target.src='https://picsum.photos/800/600?grayscale&text=图片';
+        },true);
+
+        // ==================== AI问答功能 ====================
+
+        const API_KEY = 'sk-d90796db05ad4708b596d7eba0821a80'; // 替换成你的密钥
+        const API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+
+        const SYSTEM_PROMPT = `你是一个专业的中国古建筑知识助手。你需要回答用户关于中国古建筑的问题，包括但不限于：
+1. 各朝代建筑风格特点
+2. 著名古建筑的历史背景
+3. 建筑结构和营造技艺
+4. 建筑装饰和文化内涵
+
+回答要求：
+- 语言通俗易懂，适合大众阅读
+- 内容准确专业
+- 如果问题超出古建筑范围，请友好地引导回古建筑话题
+- 回答简洁，控制在200字以内`;
+
+        let chatHistory = [];
+
+        // 切换聊天窗口显示/隐藏
+        function toggleChat() {
+            const chatWindow = document.getElementById('aiChatWindow');
+            chatWindow.classList.toggle('show');
+            if (chatWindow.classList.contains('show')) {
+                document.getElementById('aiChatInput').focus();
+            }
+        }
+
+        // 添加消息到聊天窗口
+        function addMessage(content, type) {
+            const messagesDiv = document.getElementById('aiChatMessages');
+            const messageHtml = `
+                <div class="ai-message ${type}">
+                    <div class="ai-message-avatar">${type === 'ai' ? '🤖' : '👤'}</div>
+                    <div class="ai-message-content">${content}</div>
+                </div>
+            `;
+            messagesDiv.insertAdjacentHTML('beforeend', messageHtml);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // 显示"正在输入"动画
+        function showTyping() {
+            const messagesDiv = document.getElementById('aiChatMessages');
+            const typingHtml = `
+                <div class="ai-message ai" id="typingMessage">
+                    <div class="ai-message-avatar">🤖</div>
+                    <div class="ai-typing">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            messagesDiv.insertAdjacentHTML('beforeend', typingHtml);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // 移除"正在输入"动画
+        function removeTyping() {
+            const typingMsg = document.getElementById('typingMessage');
+            if (typingMsg) typingMsg.remove();
+        }
+
+        // 发送消息
+        async function sendAiMessage() {
+            const input = document.getElementById('aiChatInput');
+            const sendBtn = document.getElementById('aiSendBtn');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            input.value = '';
+            addMessage(message, 'user');
+            sendBtn.disabled = true;
+            showTyping();
+
+            try {
+                chatHistory.push({ role: 'user', content: message });
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'qwen-turbo',
+                        messages: [
+                            { role: 'system', content: SYSTEM_PROMPT },
+                            ...chatHistory
+                        ],
+                        max_tokens: 500,
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                removeTyping();
+
+                if (data.choices && data.choices[0]) {
+                    const aiResponse = data.choices[0].message.content;
+                    addMessage(aiResponse, 'ai');
+                    chatHistory.push({ role: 'assistant', content: aiResponse });
+
+                    if (chatHistory.length > 20) {
+                        chatHistory = chatHistory.slice(-20);
+                    }
+                } else {
+                    addMessage('抱歉，出了点问题，请稍后再试。', 'ai');
+                }
+            } catch (error) {
+                removeTyping();
+                addMessage('抱歉，网络连接失败，请稍后再试。', 'ai');
+                console.error('AI请求失败:', error);
+            } finally {
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        }
+    </script>
+</body>
+</html>
